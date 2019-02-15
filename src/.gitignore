@@ -1,0 +1,7 @@
+/.deps/
+/.libs/
+/launchapps
+/Makefile
+/Makefile.in
+/launchapps-lappsutil.o
+/launchapps-launchapps.o

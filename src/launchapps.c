@@ -58,6 +58,7 @@ static int app_count = 0;
 static int page_last_position = 0;
 static const char *confdir;
 static char *bg_image_path = NULL;
+const char *homedir;
 
 // callback when window is to be closed
 static void lapps_main_window_close(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
@@ -221,6 +222,50 @@ static void lapps_exec(GtkWidget *widget, GdkEventButton *event, gpointer user_d
     g_app_info_launch(app, NULL, NULL, NULL);
 }
 
+// get icon name from id
+static char *lapps_application_icon_name(char *appid)
+{
+    FILE *fp;
+    char temp[512];
+    char *key = "Icon";
+    char *icon_name;
+
+    char *desktopfile = g_strconcat("/usr/share/applications/", appid, NULL);
+    
+    if (g_file_test(desktopfile, G_FILE_TEST_EXISTS))
+    {
+    	fp = fopen(desktopfile, "r");
+    }
+    else
+    {
+	desktopfile = g_strconcat(homedir, "/.local/share/applications/", appid, NULL);
+	if (g_file_test(desktopfile, G_FILE_TEST_EXISTS))
+	{
+	   fp = fopen(desktopfile, "r");
+	}
+	else
+	{
+	    return NULL;
+	}
+    }
+
+    openlog("Launchbox", LOG_PID | LOG_CONS, LOG_USER);
+    syslog(LOG_INFO, "desktop %s", desktopfile);
+    closelog();
+    
+    
+    while(fgets(temp, 512, fp) != NULL) {
+    	if((strstr(temp, key)) != NULL) {
+    	    icon_name = g_strsplit(g_strdup(temp),"=", -1)[1];
+    	    break;
+    	}
+    }
+
+    fclose(fp);
+
+    return icon_name;
+}
+
 // create application's icon and its shadow
 static GdkPixbuf *lapps_application_icon(GAppInfo *appinfo)
 {
@@ -232,6 +277,8 @@ static GdkPixbuf *lapps_application_icon(GAppInfo *appinfo)
     // GtkIconTheme *icon_theme = NULL;
     const char *app_name = g_app_info_get_name(appinfo);
 
+    const char *app_id = g_app_info_get_id(appinfo); //*//
+
     icon_tmp = gdk_pixbuf_new_from_file(g_strconcat(confdir, app_name, NULL), NULL);
 
     if (icon_tmp == NULL)
@@ -242,10 +289,14 @@ static GdkPixbuf *lapps_application_icon(GAppInfo *appinfo)
 	app_icon = gtk_icon_info_load_icon(icon_info, NULL);
 	const char *icon_path = g_strconcat(confdir, app_name, NULL);
 
+
+	//const char *app_id = g_app_info_get_id(appinfo);
+	char *icon_name = lapps_application_icon_name(g_strdup(app_id));
+	
 	openlog("Launchbox", LOG_PID | LOG_CONS, LOG_USER);
-	syslog(LOG_INFO, "icon_path %s", icon_path);
-	syslog(LOG_INFO, "id %s", g_app_info_get_id (G_APP_INFO(appinfo)));
-	syslog(LOG_INFO, "name %s", g_app_info_get_name (G_APP_INFO(appinfo)));
+	syslog(LOG_INFO, "icon_path %s", icon_name);
+	//syslog(LOG_INFO, "id %s", g_app_info_get_id (G_APP_INFO(appinfo)));
+	//syslog(LOG_INFO, "name %s", g_app_info_get_name (G_APP_INFO(appinfo)));
 	closelog();
 
 	//if(app_icon)
@@ -1068,7 +1119,6 @@ int main(int argc, char *argv[]) {
 
     gtk_init(&argc, &argv);
 
-    const char *homedir;
     if ((homedir = getenv("HOME")) == NULL) {
 	homedir = getpwuid(getuid())->pw_dir;
     }
@@ -1079,33 +1129,35 @@ int main(int argc, char *argv[]) {
     if (!g_file_test(confdir, G_FILE_TEST_EXISTS & G_FILE_TEST_IS_DIR))
 	g_mkdir(confdir, 0700);
 
-    FILE *fp;
-    char temp[512];
-    char *key = "gtk-icon-theme-name";
-    char *themename;
+    /* FILE *fp; */
+    /* char temp[512]; */
+    /* char *key = "gtk-icon-theme-name"; */
+    /* char *themename; */
 
-    const char *resource = g_strconcat(homedir, "/.config/.gtkrc-2.0", NULL);
+    /* const char *resource = g_strconcat(homedir, "/.config/.gtkrc-2.0", NULL); */
     
-    if (g_file_test(resource, G_FILE_TEST_EXISTS))
-    {
-	fp = fopen(resource, "r");
-    }
+    /* if (g_file_test(resource, G_FILE_TEST_EXISTS)) */
+    /* { */
+    /* 	fp = fopen(resource, "r"); */
+    /* } */
 
-    while(fgets(temp, 512, fp) != NULL) {
-	if((strstr(temp, key)) != NULL) {
-	    themename = g_strsplit(g_strdup(temp),"=", -1)[1];
-	    break;
-	}
-    }
-    
+    /* while(fgets(temp, 512, fp) != NULL) { */
+    /* 	if((strstr(temp, key)) != NULL) { */
+    /* 	    themename = g_strsplit(g_strdup(temp),"=", -1)[1]; */
+    /* 	    break; */
+    /* 	} */
+    /* } */
+
+    /* fclose(fp); */
+        
     // get icon theme
-    icon_theme = gtk_icon_theme_new ();
-    gtk_icon_theme_set_custom_theme (icon_theme, themename);
-    // icon_theme = gtk_icon_theme_get_default();
+    //icon_theme = gtk_icon_theme_new ();
+    //gtk_icon_theme_set_custom_theme (icon_theme, themename);
+    icon_theme = gtk_icon_theme_get_default();
 
-    openlog("Launchbox", LOG_PID | LOG_CONS, LOG_USER);
-    syslog(LOG_INFO, "theme: %s", themename);
-    closelog();
+    //openlog("Launchbox", LOG_PID | LOG_CONS, LOG_USER);
+    //syslog(LOG_INFO, "theme: %s", themename);
+    //closelog();
 
     // set variables
     set_icons_fonts_sizes();

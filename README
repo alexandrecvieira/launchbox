@@ -1,5 +1,5 @@
 ### Launchbox - Application Launcher for Openbox
-### Launchbox é um plugin que mostra uma janela em tela cheia listando todos os programas instalados, e possui um campo de busca
+### Launchbox mostra uma janela em tela cheia listando todos os programas instalados, e possui um campo de busca
 
 Launchbox é idealizado para permitir a busca rápida e execução dos programas instalados, o aspecto visual e funcionamento são baseados no conceito do [Slingscold do Ubuntu](https://sourceforge.net/projects/slingscold/).
 

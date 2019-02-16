@@ -229,6 +229,10 @@ static char *lapps_application_icon_name(char *appid)
     char temp[512];
     char *key = "Icon";
     char *icon_name;
+    char *icon_path;
+    char **icon_path_split;
+    char *icon_name_temp;
+    int len = 0;
 
     char *desktopfile = g_strconcat("/usr/share/applications/", appid, NULL);
     
@@ -241,27 +245,49 @@ static char *lapps_application_icon_name(char *appid)
 	desktopfile = g_strconcat(homedir, "/.local/share/applications/", appid, NULL);
 	if (g_file_test(desktopfile, G_FILE_TEST_EXISTS))
 	{
-	   fp = fopen(desktopfile, "r");
-	}
-	else
-	{
-	    return NULL;
+	    fp = fopen(desktopfile, "r");
 	}
     }
 
-    openlog("Launchbox", LOG_PID | LOG_CONS, LOG_USER);
-    syslog(LOG_INFO, "desktop %s", desktopfile);
-    closelog();
-    
-    
     while(fgets(temp, 512, fp) != NULL) {
     	if((strstr(temp, key)) != NULL) {
-    	    icon_name = g_strsplit(g_strdup(temp),"=", -1)[1];
+	    if((strstr(temp, "/")) != NULL)
+	    {
+		icon_path = g_strsplit(temp, "=", -1)[1];
+		icon_path_split = g_strsplit(icon_path, "/", -1);
+		len = sizeof(icon_path_split);
+		icon_name_temp =  g_strdup(icon_path_split[len]);
+
+		//	if(strstr(icon_name_temp, "."))
+		//	    icon_name = g_strsplit(icon_name_temp, ".", -1)[0];
+		//	else
+		//	    icon_name = g_strdup(icon_name_temp);
+
+		openlog("Launchbox", LOG_PID | LOG_CONS, LOG_USER);
+		// syslog(LOG_INFO, "app_id_temp %s", icon_name_temp);
+		syslog(LOG_INFO, "len %d", len);
+		closelog();
+	    }
+	    else
+	    {
+		openlog("Launchbox", LOG_PID | LOG_CONS, LOG_USER);
+		syslog(LOG_INFO, "app_id_temp2 %s", appid);
+		closelog();
+		
+		icon_name = g_strsplit(temp,"=", -1)[1];
+	    }
+	    
     	    break;
     	}
     }
 
-    fclose(fp);
+    openlog("Launchbox", LOG_PID | LOG_CONS, LOG_USER);
+    syslog(LOG_INFO, "icon_name %s", icon_name);
+    closelog();
+
+    //g_strfreev(icon_path_split);
+
+    //fclose(fp);
 
     return icon_name;
 }
@@ -277,7 +303,7 @@ static GdkPixbuf *lapps_application_icon(GAppInfo *appinfo)
     // GtkIconTheme *icon_theme = NULL;
     const char *app_name = g_app_info_get_name(appinfo);
 
-    const char *app_id = g_app_info_get_id(appinfo); //*//
+    char *app_id = g_strdup(g_app_info_get_id(appinfo)); //*//
 
     icon_tmp = gdk_pixbuf_new_from_file(g_strconcat(confdir, app_name, NULL), NULL);
 
@@ -291,7 +317,7 @@ static GdkPixbuf *lapps_application_icon(GAppInfo *appinfo)
 
 
 	//const char *app_id = g_app_info_get_id(appinfo);
-	char *icon_name = lapps_application_icon_name(g_strdup(app_id));
+	char *icon_name = lapps_application_icon_name(app_id);
 	
 	openlog("Launchbox", LOG_PID | LOG_CONS, LOG_USER);
 	syslog(LOG_INFO, "icon_path %s", icon_name);
@@ -361,10 +387,6 @@ static GtkWidget *lapps_create_table()
 
     int i = 0;
     int j = 0;
-
-    /* openlog("Launchbox", LOG_PID | LOG_CONS, LOG_USER); */
-    /* syslog(LOG_INFO, "all_apps_list: %d - %d", g_list_length(all_apps_list), page_last_position); */
-    /* closelog(); */
 
     for (test_list = g_list_nth(all_apps_list, page_last_position); test_list; test_list = test_list->next)
     {

@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.])
 
 AC_PREREQ(2.59)
-AC_INIT([launchbox], [0.1.0], [acamargo.vieira@gmail.com])
+AC_INIT([launchbox], [2.0.0], [acamargo.vieira@gmail.com])
 AC_PROG_CC
 AC_PROG_CXX
 

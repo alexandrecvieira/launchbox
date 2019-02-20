@@ -58,7 +58,6 @@ static int app_count = 0;
 static int page_last_position = 0;
 static const char *confdir;
 static char *bg_image_path = NULL;
-const char *homedir;
 
 // callback when window is to be closed
 static void lapps_main_window_close(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
@@ -222,76 +221,6 @@ static void lapps_exec(GtkWidget *widget, GdkEventButton *event, gpointer user_d
     g_app_info_launch(app, NULL, NULL, NULL);
 }
 
-// get icon name from id
-static char *lapps_application_icon_name(char *appid)
-{
-    FILE *fp;
-    char temp[512];
-    char *key = "Icon";
-    char *icon_name;
-    char *icon_path;
-    char **icon_path_split;
-    char *icon_name_temp;
-    int len = 0;
-
-    char *desktopfile = g_strconcat("/usr/share/applications/", appid, NULL);
-    
-    if (g_file_test(desktopfile, G_FILE_TEST_EXISTS))
-    {
-    	fp = fopen(desktopfile, "r");
-    }
-    else
-    {
-	desktopfile = g_strconcat(homedir, "/.local/share/applications/", appid, NULL);
-	if (g_file_test(desktopfile, G_FILE_TEST_EXISTS))
-	{
-	    fp = fopen(desktopfile, "r");
-	}
-    }
-
-    while(fgets(temp, 512, fp) != NULL) {
-    	if((strstr(temp, key)) != NULL) {
-	    if((strstr(temp, "/")) != NULL)
-	    {
-		icon_path = g_strsplit(temp, "=", -1)[1];
-		icon_path_split = g_strsplit(icon_path, "/", -1);
-		len = sizeof(icon_path_split);
-		icon_name_temp =  g_strdup(icon_path_split[len]);
-
-		//	if(strstr(icon_name_temp, "."))
-		//	    icon_name = g_strsplit(icon_name_temp, ".", -1)[0];
-		//	else
-		//	    icon_name = g_strdup(icon_name_temp);
-
-		openlog("Launchbox", LOG_PID | LOG_CONS, LOG_USER);
-		// syslog(LOG_INFO, "app_id_temp %s", icon_name_temp);
-		syslog(LOG_INFO, "len %d", len);
-		closelog();
-	    }
-	    else
-	    {
-		openlog("Launchbox", LOG_PID | LOG_CONS, LOG_USER);
-		syslog(LOG_INFO, "app_id_temp2 %s", appid);
-		closelog();
-		
-		icon_name = g_strsplit(temp,"=", -1)[1];
-	    }
-	    
-    	    break;
-    	}
-    }
-
-    openlog("Launchbox", LOG_PID | LOG_CONS, LOG_USER);
-    syslog(LOG_INFO, "icon_name %s", icon_name);
-    closelog();
-
-    //g_strfreev(icon_path_split);
-
-    //fclose(fp);
-
-    return icon_name;
-}
-
 // create application's icon and its shadow
 static GdkPixbuf *lapps_application_icon(GAppInfo *appinfo)
 {
@@ -300,57 +229,29 @@ static GdkPixbuf *lapps_application_icon(GAppInfo *appinfo)
     GdkPixbuf *icon_tmp = NULL;
     GtkIconInfo *icon_info = NULL;
     GIcon *g_icon = NULL;
-    // GtkIconTheme *icon_theme = NULL;
+       
     const char *app_name = g_app_info_get_name(appinfo);
-
-    char *app_id = g_strdup(g_app_info_get_id(appinfo)); //*//
-
-    icon_tmp = gdk_pixbuf_new_from_file(g_strconcat(confdir, app_name, NULL), NULL);
-
-    if (icon_tmp == NULL)
+    const char *file_path = g_strconcat(confdir, app_name, NULL);
+    
+    if (g_file_test(file_path, G_FILE_TEST_EXISTS))
     {
-	g_icon = g_app_info_get_icon(G_APP_INFO(appinfo));
-	// icon_theme = gtk_icon_theme_get_default();
-	icon_info = gtk_icon_theme_lookup_by_gicon(icon_theme, g_icon, icon_size, GTK_ICON_LOOKUP_USE_BUILTIN);
-	app_icon = gtk_icon_info_load_icon(icon_info, NULL);
-	const char *icon_path = g_strconcat(confdir, app_name, NULL);
-
-
-	//const char *app_id = g_app_info_get_id(appinfo);
-	char *icon_name = lapps_application_icon_name(app_id);
-	
-	openlog("Launchbox", LOG_PID | LOG_CONS, LOG_USER);
-	syslog(LOG_INFO, "icon_path %s", icon_name);
-	//syslog(LOG_INFO, "id %s", g_app_info_get_id (G_APP_INFO(appinfo)));
-	//syslog(LOG_INFO, "name %s", g_app_info_get_name (G_APP_INFO(appinfo)));
-	closelog();
-
-	//if(app_icon)
-//	{
-//	    icon_tmp = shadow_icon(app_icon, icon_path);
-//	    icon = gdk_pixbuf_scale_simple(icon_tmp, icon_size, icon_size, GDK_INTERP_BILINEAR);
-//	}
-//	else
-//	{
-	    icon = gdk_pixbuf_scale_simple(app_icon, icon_size, icon_size, GDK_INTERP_BILINEAR);
-//	}
+	icon_tmp = gdk_pixbuf_new_from_file(file_path, NULL);
     }
     else
-	icon = gdk_pixbuf_scale_simple(icon_tmp, icon_size, icon_size, GDK_INTERP_BILINEAR);
+    {
+	icon_tmp = NULL;
+    }
+    
+    if (icon_tmp == NULL)
+    {
+	g_icon = g_app_info_get_icon(appinfo);
+	icon_info = gtk_icon_theme_lookup_by_gicon(icon_theme, g_icon, icon_size, GTK_ICON_LOOKUP_FORCE_SIZE);
+	app_icon = gtk_icon_info_load_icon(icon_info, NULL);
 
-    if (app_icon)
-    	g_object_unref(G_OBJECT(app_icon));
-
-    if (icon_tmp)
-    	g_object_unref(G_OBJECT(icon_tmp));
-
-    if (icon_info)
-    	gtk_icon_info_free(icon_info);
-
-    if(g_icon)
-    	g_object_unref(G_OBJECT(g_icon));
-
-    return icon;
+	return app_icon;
+    }
+    else
+	return icon;
 }
 
 static GdkPixbuf *lapps_label_lookup(GAppInfo *app)
@@ -1141,6 +1042,7 @@ int main(int argc, char *argv[]) {
 
     gtk_init(&argc, &argv);
 
+    const char *homedir;
     if ((homedir = getenv("HOME")) == NULL) {
 	homedir = getpwuid(getuid())->pw_dir;
     }
@@ -1151,36 +1053,8 @@ int main(int argc, char *argv[]) {
     if (!g_file_test(confdir, G_FILE_TEST_EXISTS & G_FILE_TEST_IS_DIR))
 	g_mkdir(confdir, 0700);
 
-    /* FILE *fp; */
-    /* char temp[512]; */
-    /* char *key = "gtk-icon-theme-name"; */
-    /* char *themename; */
-
-    /* const char *resource = g_strconcat(homedir, "/.config/.gtkrc-2.0", NULL); */
-    
-    /* if (g_file_test(resource, G_FILE_TEST_EXISTS)) */
-    /* { */
-    /* 	fp = fopen(resource, "r"); */
-    /* } */
-
-    /* while(fgets(temp, 512, fp) != NULL) { */
-    /* 	if((strstr(temp, key)) != NULL) { */
-    /* 	    themename = g_strsplit(g_strdup(temp),"=", -1)[1]; */
-    /* 	    break; */
-    /* 	} */
-    /* } */
-
-    /* fclose(fp); */
-        
-    // get icon theme
-    //icon_theme = gtk_icon_theme_new ();
-    //gtk_icon_theme_set_custom_theme (icon_theme, themename);
     icon_theme = gtk_icon_theme_get_default();
-
-    //openlog("Launchbox", LOG_PID | LOG_CONS, LOG_USER);
-    //syslog(LOG_INFO, "theme: %s", themename);
-    //closelog();
-
+    
     // set variables
     set_icons_fonts_sizes();
             

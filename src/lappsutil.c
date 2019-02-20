@@ -187,15 +187,16 @@ GdkPixbuf *shadow_icon(GdkPixbuf *src_pix, const char *path)
     MagickSetImageBackgroundColor(dest_wand, shadow_color);
     MagickShadowImage(dest_wand, 100, 2, 0, 0);
     MagickCompositeImage(dest_wand, shadow, OverCompositeOp, 3, 3);
+    
     width = MagickGetImageWidth(dest_wand);
     height = MagickGetImageHeight(dest_wand);
-    MagickSetImageDepth(dest_wand, 32);
-
+    
     bg_target_pix = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, width, height);
 
     pixels = gdk_pixbuf_get_pixels(bg_target_pix);
     rowstride = gdk_pixbuf_get_rowstride(bg_target_pix);
-
+    MagickSetImageDepth(dest_wand, 32);
+    
     for (row = 0; row < height; row++)
     {
 	guchar *data = pixels + row * rowstride;

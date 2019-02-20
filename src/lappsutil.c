@@ -164,7 +164,7 @@ GdkPixbuf *create_app_name(const char *app_name, double font_size)
     return bg_target_pix;
 }
 
-GdkPixbuf *shadow_icon(GdkPixbuf *src_pix, const char *path)
+GdkPixbuf *shadow_icon(GdkPixbuf *src_pix)
 {
     GdkPixbuf *bg_target_pix = NULL;
     size_t width, height;
@@ -201,12 +201,6 @@ GdkPixbuf *shadow_icon(GdkPixbuf *src_pix, const char *path)
     {
 	guchar *data = pixels + row * rowstride;
 	MagickExportImagePixels(dest_wand, 0, row, width, 1, "RGBA", CharPixel, data);
-    }
-
-    if (path != NULL)
-    {
-	MagickAdaptiveResizeImage(dest_wand, icon_size, icon_size);
-	MagickWriteImage(dest_wand, path);
     }
 
     if (shadow)

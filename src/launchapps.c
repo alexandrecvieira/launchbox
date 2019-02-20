@@ -226,32 +226,27 @@ static GdkPixbuf *lapps_application_icon(GAppInfo *appinfo)
 {
     GdkPixbuf *app_icon = NULL;
     GdkPixbuf *icon = NULL;
-    GdkPixbuf *icon_tmp = NULL;
     GtkIconInfo *icon_info = NULL;
     GIcon *g_icon = NULL;
        
     const char *app_name = g_app_info_get_name(appinfo);
-    const char *file_path = g_strconcat(confdir, app_name, NULL);
-    
-    if (g_file_test(file_path, G_FILE_TEST_EXISTS))
+    char *icon_shadowed_path = g_strconcat(confdir, app_name, NULL);
+
+    if (g_file_test(icon_shadowed_path, G_FILE_TEST_EXISTS))
     {
-	icon_tmp = gdk_pixbuf_new_from_file(file_path, NULL);
+	icon = gdk_pixbuf_new_from_file(icon_shadowed_path, NULL);
+	
+	return icon;
     }
     else
-    {
-	icon_tmp = NULL;
-    }
-    
-    if (icon_tmp == NULL)
     {
 	g_icon = g_app_info_get_icon(appinfo);
 	icon_info = gtk_icon_theme_lookup_by_gicon(icon_theme, g_icon, icon_size, GTK_ICON_LOOKUP_FORCE_SIZE);
 	app_icon = gtk_icon_info_load_icon(icon_info, NULL);
-
-	return app_icon;
-    }
-    else
+	icon = shadow_icon(app_icon);
+		
 	return icon;
+    }
 }
 
 static GdkPixbuf *lapps_label_lookup(GAppInfo *app)
@@ -544,7 +539,7 @@ static void lapps_update_indicator_rw(gboolean border)
 	if (GTK_IMAGE(indicator_rw) && border)
 	{
 	    if (indicator_rw_shaded_pix == NULL)
-		indicator_rw_shaded_pix = shadow_icon(gtk_image_get_pixbuf(GTK_IMAGE(indicator_rw)), NULL);
+		indicator_rw_shaded_pix = shadow_icon(gtk_image_get_pixbuf(GTK_IMAGE(indicator_rw)));
 
 	    gtk_image_set_from_pixbuf(GTK_IMAGE(indicator_rw), indicator_rw_shaded_pix);
 	}
@@ -579,7 +574,7 @@ static void lapps_update_indicator_fw(gboolean border)
 	if (GTK_IMAGE(indicator_fw) && border)
 	{
 	    if (indicator_fw_shaded_pix == NULL)
-		indicator_fw_shaded_pix = shadow_icon(gtk_image_get_pixbuf(GTK_IMAGE(indicator_fw)), NULL);
+		indicator_fw_shaded_pix = shadow_icon(gtk_image_get_pixbuf(GTK_IMAGE(indicator_fw)));
 
 	    gtk_image_set_from_pixbuf(GTK_IMAGE(indicator_fw), indicator_fw_shaded_pix);
 	}

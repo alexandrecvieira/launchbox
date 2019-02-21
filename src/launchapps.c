@@ -20,6 +20,8 @@
 
 #include "lappsutil.h"
 
+#include <fcntl.h>
+#include <signal.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <pwd.h>
@@ -33,6 +35,7 @@
 #define CONFPATH "/.config/launchbox/"
 #define CONFFILE "launchbox.recent"
 #define DEFAULTBG "launchapps-bg-default.jpg"
+#define LOCKFILE "/tmp/launchboxrun"
 
 static GtkWidget *main_window = NULL;
 static GtkWidget *page_table = NULL;
@@ -1042,7 +1045,31 @@ static void lapps_apply_configuration()
 	/* config_group_set_string(lapps->settings, "image_path", lapps->image_path); */
 }
 
+void sigint_handler(int sig)
+{
+   fprintf(stderr, "Caught signal %d.\n", sig);
+   unlink("/tmp/launchboxrun");
+   /* exit() is not safe in a signal handler, use _exit() */
+   _exit(1);
+}
+
 int main(int argc, char *argv[]) {
+
+    struct sigaction act;
+    int myfd;
+ 
+    myfd = open(LOCKFILE, O_CREAT|O_EXCL);
+    if ( myfd < 0 )
+    {
+	openlog("Launchbox", LOG_PID | LOG_CONS, LOG_USER);
+	syslog(LOG_INFO, g_strconcat(LAPPSNAME, " already running!\n", NULL));
+	closelog();
+	exit(1);
+    }
+    act.sa_handler = sigint_handler;
+    sigemptyset(&act.sa_mask);
+    act.sa_flags = 0;
+    sigaction(SIGINT, &act, NULL);
 
     gtk_init(&argc, &argv);
 
@@ -1072,6 +1099,10 @@ int main(int argc, char *argv[]) {
         
     gtk_main();
 
+    unlink(LOCKFILE);
+
+    close(myfd);
+    
     return 0;
 }
 

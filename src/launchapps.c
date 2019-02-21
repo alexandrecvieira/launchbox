@@ -1047,10 +1047,12 @@ static void lapps_apply_configuration()
 
 void sigint_handler(int sig)
 {
-   fprintf(stderr, "Caught signal %d.\n", sig);
-   unlink("/tmp/launchboxrun");
-   /* exit() is not safe in a signal handler, use _exit() */
-   _exit(1);
+    openlog("Launchbox", LOG_PID | LOG_CONS, LOG_USER);
+    syslog(LOG_INFO, "Caught signal %d.\n");
+    closelog();
+    unlink(LOCKFILE);
+    /* exit() is not safe in a signal handler, use _exit() */
+    _exit(1);
 }
 
 int main(int argc, char *argv[]) {

@@ -222,31 +222,40 @@ static void lapps_exec(GtkWidget *widget, GdkEventButton *event, gpointer user_d
 }
 
 // create application's icon and its shadow
-static GdkPixbuf *lapps_application_icon(GAppInfo *appinfo)
+static GtkWidget *lapps_application_icon(GAppInfo *appinfo)
 {
     GdkPixbuf *app_icon = NULL;
-    GdkPixbuf *icon = NULL;
+    GdkPixbuf *app_icon_shadowed = NULL;
     GtkIconInfo *icon_info = NULL;
     GIcon *g_icon = NULL;
-       
-    const char *app_name = g_app_info_get_name(appinfo);
-    char *icon_shadowed_path = g_strconcat(confdir, app_name, NULL);
+    GtkWidget *icon = NULL;
 
-    if (g_file_test(icon_shadowed_path, G_FILE_TEST_EXISTS))
-    {
-	icon = gdk_pixbuf_new_from_file(icon_shadowed_path, NULL);
-	
-	return icon;
-    }
-    else
-    {
-	g_icon = g_app_info_get_icon(appinfo);
-	icon_info = gtk_icon_theme_lookup_by_gicon(icon_theme, g_icon, icon_size, GTK_ICON_LOOKUP_FORCE_SIZE);
-	app_icon = gtk_icon_info_load_icon(icon_info, NULL);
-	icon = shadow_icon(app_icon);
-		
-	return icon;
-    }
+    const char *path = g_strconcat(confdir, g_app_info_get_name(appinfo), NULL);
+    
+    g_icon = g_app_info_get_icon(appinfo);
+    icon_info = gtk_icon_theme_lookup_by_gicon(icon_theme, g_icon, icon_size, GTK_ICON_LOOKUP_FORCE_SIZE);
+    app_icon = gtk_icon_info_load_icon(icon_info, NULL);
+            
+    gdk_pixbuf_save(app_icon, path, "png", NULL, NULL);
+
+    app_icon_shadowed = shadow_icon(NULL, path);
+    gdk_pixbuf_save(app_icon_shadowed, path, "png", NULL, NULL);
+
+    icon = gtk_image_new_from_file(path);
+    
+    if (app_icon)
+	g_object_unref(G_OBJECT(app_icon));
+
+    if (app_icon_shadowed)
+	g_object_unref(G_OBJECT(app_icon_shadowed));
+
+    if (icon_info)
+	gtk_icon_info_free(icon_info);
+
+    if(g_icon)
+	g_object_unref(G_OBJECT(g_icon));
+    
+    return icon;
 }
 
 static GdkPixbuf *lapps_label_lookup(GAppInfo *app)
@@ -297,7 +306,7 @@ static GtkWidget *lapps_create_table()
 	if (g_file_test(bg_path, G_FILE_TEST_EXISTS))
 	    gtk_box_pack_start(GTK_BOX(app_box), gtk_image_new_from_file(bg_path), FALSE, FALSE, 0);
 	else
-	    gtk_box_pack_start(GTK_BOX(app_box), gtk_image_new_from_pixbuf(lapps_application_icon(test_list->data)),
+	    gtk_box_pack_start(GTK_BOX(app_box), lapps_application_icon(test_list->data),
 			       FALSE, FALSE, 0);	
 	app_label = gtk_image_new_from_pixbuf(lapps_label_lookup(test_list->data));
 	gtk_widget_set_size_request(app_label, app_label_width, app_label_height);
@@ -362,7 +371,7 @@ static GtkWidget *lapps_create_recent_frame(GList *recent_list)
 	if (g_file_test(bg_path, G_FILE_TEST_EXISTS))
 	    gtk_box_pack_start(GTK_BOX(app_box), gtk_image_new_from_file(bg_path), FALSE, FALSE, 0);
 	else
-	    gtk_box_pack_start(GTK_BOX(app_box), gtk_image_new_from_pixbuf(lapps_application_icon(test_list->data)),
+	    gtk_box_pack_start(GTK_BOX(app_box), lapps_application_icon(test_list->data),
 			       FALSE, FALSE, 0);
 	app_label = (GtkImage *) gtk_image_new_from_pixbuf(lapps_label_lookup(test_list->data));
 	gtk_widget_set_size_request(GTK_WIDGET(app_label), app_label_width, app_label_height);
@@ -539,7 +548,7 @@ static void lapps_update_indicator_rw(gboolean border)
 	if (GTK_IMAGE(indicator_rw) && border)
 	{
 	    if (indicator_rw_shaded_pix == NULL)
-		indicator_rw_shaded_pix = shadow_icon(gtk_image_get_pixbuf(GTK_IMAGE(indicator_rw)));
+		indicator_rw_shaded_pix = shadow_icon(gtk_image_get_pixbuf(GTK_IMAGE(indicator_rw)), NULL);
 
 	    gtk_image_set_from_pixbuf(GTK_IMAGE(indicator_rw), indicator_rw_shaded_pix);
 	}
@@ -574,7 +583,7 @@ static void lapps_update_indicator_fw(gboolean border)
 	if (GTK_IMAGE(indicator_fw) && border)
 	{
 	    if (indicator_fw_shaded_pix == NULL)
-		indicator_fw_shaded_pix = shadow_icon(gtk_image_get_pixbuf(GTK_IMAGE(indicator_fw)));
+		indicator_fw_shaded_pix = shadow_icon(gtk_image_get_pixbuf(GTK_IMAGE(indicator_fw)), NULL);
 
 	    gtk_image_set_from_pixbuf(GTK_IMAGE(indicator_fw), indicator_fw_shaded_pix);
 	}

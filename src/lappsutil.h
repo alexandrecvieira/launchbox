@@ -26,6 +26,10 @@
 #include <math.h>
 #include <string.h>
 
+#include <X11/Xlib.h>
+#include <X11/Xatom.h>
+#include <X11/Xutil.h>
+
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #include <gio/gio.h>
@@ -44,9 +48,11 @@ extern double screen_size_relation;
 extern char *recent_label_font_size;
 
 void set_icons_fonts_sizes();
-gboolean blur_background(const char *image, const char *bg_image);
+gboolean blur_background(const char *image_path, const char *bg_image_path);
+GdkPixbuf *blur_background_ximage(XImage *image);
 GdkPixbuf *create_app_name(const char *app_name, double font_size);
 GdkPixbuf *shadow_icon(GdkPixbuf *src_pix, const char *path);
 int app_name_comparator(GAppInfo *item1, GAppInfo *item2);
+Pixmap get_root_pixmap(Display* display, Window *root);
 
 #endif /* LAPPSUTIL_H */

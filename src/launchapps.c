@@ -47,6 +47,7 @@ static GdkPixbuf *indicator_fw_pix = NULL;
 static GdkPixbuf *indicator_rw_pix = NULL;
 static GdkPixbuf *indicator_fw_shaded_pix = NULL;
 static GdkPixbuf *indicator_rw_shaded_pix = NULL;
+static GdkPixbuf *bg_pixbuf = NULL;
 static GtkIconTheme *icon_theme = NULL;
 
 static GList *all_apps_list = NULL;
@@ -872,7 +873,15 @@ static void lapps_create_main_window()
     gtk_layout_set_size(GTK_LAYOUT(layout), s_width, s_height);
     gtk_container_add(GTK_CONTAINER(main_window), layout);
     gtk_widget_show(layout);
-    GtkWidget *bg_image = gtk_image_new_from_file(bg_image_path);
+    GtkWidget *bg_image = NULL;
+    if(bg_pixbuf == NULL)
+    {
+	bg_image = gtk_image_new_from_file(bg_image_path);
+    }
+    else {
+	bg_image = gtk_image_new_from_pixbuf(bg_pixbuf);
+	g_object_unref(bg_pixbuf);
+    }
     gtk_layout_put(GTK_LAYOUT(layout), bg_image, 0, 0);
     gtk_widget_show(bg_image);
 
@@ -1029,25 +1038,9 @@ static void lapps_apply_configuration()
 
 	// check background image
 	if (!g_file_test(bg_path, G_FILE_TEST_EXISTS))
-		blur_background(bg_default_path, bg_path);
+	    blur_background(bg_default_path, bg_path);
 
 	bg_image_path = g_strdup(bg_path);
-
-	/* if (g_strcmp0(lapps->image_path_test, lapps->image_path) != 0) */
-	/* { */
-	/* 	if (lapps->image_path == NULL) */
-	/* 	{ */
-	/* 		blur_background(bg_default_path, bg_path); */
-	/* 		lapps->image_path_test = NULL; */
-	/* 	} */
-	/* 	else */
-	/* 	{ */
-	/* 		blur_background(lapps->image_path, bg_path); */
-	/* 		lapps->image_path_test = g_strdup(lapps->image_path); */
-	/* 	} */
-	/* } */
-
-	/* config_group_set_string(lapps->settings, "image_path", lapps->image_path); */
 }
 
 void sigint_handler(int sig)
@@ -1064,7 +1057,11 @@ int main(int argc, char *argv[]) {
 
     struct sigaction act;
     int myfd;
- 
+    Display *display;
+    Window  root;
+    Pixmap bg_pixmap;
+    XImage *image;
+     
     myfd = open(LOCKFILE, O_CREAT|O_EXCL);
     if ( myfd < 0 )
     {
@@ -1098,7 +1095,22 @@ int main(int argc, char *argv[]) {
             
     // load background image
     lapps_apply_configuration();
-        
+    display = XOpenDisplay(getenv("DISPLAY"));
+    if (display == NULL) {
+    	openlog("Launchbox", LOG_PID | LOG_CONS, LOG_USER);
+    	syslog(LOG_INFO, "cannot connect to X server %s\n", getenv("DISPLAY") ? getenv("DISPLAY") : "(default)");
+    	closelog();
+        bg_pixbuf = NULL;
+    }
+    else
+    {
+	root = RootWindow(display, DefaultScreen(display));
+	bg_pixmap = get_root_pixmap(display, &root);
+	image = XGetImage(display, bg_pixmap, 0, 0, s_width, s_height, ~0, ZPixmap);
+	bg_pixbuf = blur_background_ximage(image);
+	XDestroyImage(image);
+    }
+            
     // load first page at plugin startup
     lapps_tables_init();
     

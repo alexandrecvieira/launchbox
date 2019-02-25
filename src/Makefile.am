@@ -6,7 +6,7 @@ launchbox_SOURCES = launchapps.c lappsutil.c
 DEFS = -DLOCALEDIR=\"$(localedir)\" @DEFS@
 
 # Linker options
-launchbox_LDFLAGS = $(LTLIBINTL) $(MAGICKWAND_LIBS) $(GLIB2_LIBS) $(GTK2_LIBS) $(GIO2_LIBS) -lm
+launchbox_LDFLAGS = $(LTLIBINTL) $(MAGICKWAND_LIBS) $(GLIB2_LIBS) $(GTK2_LIBS) $(GIO2_LIBS) -lX11 -lm
 
 # Compiler options. Here we are adding the include directory
 # to be searched for headers included in the source code.

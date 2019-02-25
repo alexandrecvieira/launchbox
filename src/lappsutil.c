@@ -61,6 +61,75 @@ gboolean blur_background(const char *image_path, const char *bg_image_path)
     return TRUE;
 }
 
+GdkPixbuf *blur_background_ximage(XImage *image)
+{
+    GdkPixbuf *bg_target_pix = NULL;
+    MagickWand *inWand = NULL;
+    MagickWand *outWand = NULL;
+  
+    PixelIterator *pitr = NULL;
+    PixelWand *pwand = NULL;
+    PixelWand **wand_pixels = NULL;
+    unsigned long pixel;
+    int x, y;
+    char hex[128];
+
+    int rowstride, row;
+    guchar *pixels = NULL;
+
+    if(image == NULL){
+	return NULL;
+    }
+    else
+    {
+	MagickWandGenesis();
+	inWand = NewMagickWand();
+	pwand = NewPixelWand();
+	PixelSetColor(pwand,"white"); // Set default;
+	MagickNewImage(inWand, s_width, s_height, pwand);
+	pitr = NewPixelIterator(inWand);
+
+	unsigned long nwands; // May also be size_t
+
+	for (y=0; y < image->height; y++) {
+	    wand_pixels=PixelGetNextIteratorRow(pitr,&nwands);
+            for ( x=0; x < image->width; x++) {
+                pixel = XGetPixel(image,x,y);
+                sprintf(hex, "#%02x%02x%02x",
+			pixel>>16,           // Red
+			(pixel&0x00ff00)>>8, // Green
+			pixel&0x0000ff       // Blue
+		    );
+                PixelSetColor(wand_pixels[x],hex);
+            }
+            (void) PixelSyncIterator(pitr);
+	}
+
+	outWand = CloneMagickWand(inWand);
+	MagickBlurImage(outWand, 0, 15);
+	MagickSetImageDepth(outWand, 32);
+
+	bg_target_pix = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, s_width, s_height);
+
+	pixels = gdk_pixbuf_get_pixels(bg_target_pix);
+	rowstride = gdk_pixbuf_get_rowstride(bg_target_pix);
+  
+	for (row = 0; row < s_height; row++)
+	{
+	    guchar *data = pixels + row * rowstride;
+	    MagickExportImagePixels(outWand, 0, row, s_width, 1, "RGBA", CharPixel, data);
+	}
+
+	pitr = DestroyPixelIterator(pitr);
+	inWand = DestroyMagickWand(inWand);
+	outWand = DestroyMagickWand(outWand);
+
+	MagickWandTerminus();
+
+	return bg_target_pix;
+    }
+}
+
 GdkPixbuf *create_app_name(const char *app_name, double font_size)
 {
     GdkPixbuf *bg_target_pix = NULL;
@@ -302,4 +371,28 @@ void set_icons_fonts_sizes()
 int app_name_comparator(GAppInfo *item1, GAppInfo *item2)
 {
     return g_ascii_strcasecmp(g_app_info_get_name(item1), g_app_info_get_name(item2));
+}
+
+Pixmap get_root_pixmap(Display* display, Window *root)
+{
+    Pixmap currentRootPixmap;
+    Atom act_type;
+    int act_format;
+    unsigned long nitems, bytes_after;
+    unsigned char *data = NULL;
+    Atom _XROOTPMAP_ID;
+
+    _XROOTPMAP_ID = XInternAtom(display, "_XROOTPMAP_ID", False);
+
+    if (XGetWindowProperty(display, *root, _XROOTPMAP_ID, 0, 1, False,
+                XA_PIXMAP, &act_type, &act_format, &nitems, &bytes_after,
+                &data) == Success) {
+
+        if (data) {
+            currentRootPixmap = *((Pixmap *) data);
+            XFree(data);
+        }
+    }
+
+    return currentRootPixmap;
 }

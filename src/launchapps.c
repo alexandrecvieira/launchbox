@@ -229,6 +229,7 @@ static GtkWidget *lapps_application_icon(GAppInfo *appinfo)
 {
     GdkPixbuf *app_icon = NULL;
     GdkPixbuf *app_icon_shadowed = NULL;
+    GdkPixbuf *app_icon_scalled = NULL;
     GtkIconInfo *icon_info = NULL;
     GIcon *g_icon = NULL;
     GtkWidget *icon = NULL;
@@ -242,7 +243,8 @@ static GtkWidget *lapps_application_icon(GAppInfo *appinfo)
     gdk_pixbuf_save(app_icon, path, "png", NULL, NULL);
 
     app_icon_shadowed = shadow_icon(NULL, path);
-    gdk_pixbuf_save(app_icon_shadowed, path, "png", NULL, NULL);
+    app_icon_scalled = gdk_pixbuf_scale_simple(app_icon_scalled, icon_size, icon_size, GDK_INTERP_BILINEAR);
+    gdk_pixbuf_save(app_icon_scalled, path, "png", NULL, NULL);
 
     icon = gtk_image_new_from_file(path);
     
@@ -251,6 +253,9 @@ static GtkWidget *lapps_application_icon(GAppInfo *appinfo)
 
     if (app_icon_shadowed)
 	g_object_unref(G_OBJECT(app_icon_shadowed));
+
+    if (app_icon_scalled)
+	g_object_unref(G_OBJECT(app_icon_scalled));
 
     if (icon_info)
 	gtk_icon_info_free(icon_info);

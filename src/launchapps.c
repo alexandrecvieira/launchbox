@@ -244,7 +244,7 @@ static GtkWidget *lapps_application_icon(GAppInfo *appinfo)
     gdk_pixbuf_save(app_icon, path, "png", NULL, NULL);
 
     app_icon_shadowed = shadow_icon(NULL, path);
-    app_icon_scalled = gdk_pixbuf_scale_simple(app_icon_scalled, icon_size, icon_size, GDK_INTERP_BILINEAR);
+    app_icon_scalled = gdk_pixbuf_scale_simple(app_icon_shadowed, icon_size, icon_size, GDK_INTERP_BILINEAR);
     gdk_pixbuf_save(app_icon_scalled, path, "png", NULL, NULL);
 
     icon = gtk_image_new_from_file(path);

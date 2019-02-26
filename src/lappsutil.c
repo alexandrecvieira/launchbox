@@ -29,7 +29,6 @@ char *recent_label_font_size;
 gboolean blur_background(const char *image_path, const char *bg_image_path)
 {
     MagickWand *inWand = NULL;
-    MagickWand *outWand = NULL;
     MagickBooleanType status;
 
     MagickWandGenesis();
@@ -43,19 +42,15 @@ gboolean blur_background(const char *image_path, const char *bg_image_path)
 	return FALSE;
     }
 
-    outWand = CloneMagickWand(inWand);
-    MagickBlurImage(outWand, 0, 15);
-    MagickSetImageDepth(outWand, 32);
+    MagickBlurImage(inWand, 0, 5);
+ 
+    MagickAdaptiveResizeImage(inWand, s_width, s_height);
 
-    MagickAdaptiveResizeImage(outWand, s_width, s_height);
-
-    MagickWriteImage(outWand, bg_image_path);
+    MagickWriteImage(inWand, bg_image_path);
 
     if (inWand)
 	inWand = DestroyMagickWand(inWand);
-    if (outWand)
-	outWand = DestroyMagickWand(outWand);
-
+ 
     MagickWandTerminus();
 
     return TRUE;
@@ -65,8 +60,7 @@ GdkPixbuf *blur_background_ximage(XImage *image)
 {
     GdkPixbuf *bg_target_pix = NULL;
     MagickWand *inWand = NULL;
-    MagickWand *outWand = NULL;
-  
+       
     PixelIterator *pitr = NULL;
     PixelWand *pwand = NULL;
     PixelWand **wand_pixels = NULL;
@@ -85,7 +79,7 @@ GdkPixbuf *blur_background_ximage(XImage *image)
 	MagickWandGenesis();
 	inWand = NewMagickWand();
 	pwand = NewPixelWand();
-	PixelSetColor(pwand,"white"); // Set default;
+	PixelSetColor(pwand, "none"); // Set default;
 	MagickNewImage(inWand, s_width, s_height, pwand);
 	pitr = NewPixelIterator(inWand);
 
@@ -105,9 +99,9 @@ GdkPixbuf *blur_background_ximage(XImage *image)
             (void) PixelSyncIterator(pitr);
 	}
 
-	outWand = CloneMagickWand(inWand);
-	MagickBlurImage(outWand, 0, 15);
-	MagickSetImageDepth(outWand, 32);
+	MagickBlurImage(inWand, 0, 15);
+
+	// MagickSetImageOpacity(inWand, 0.5);
 
 	bg_target_pix = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, s_width, s_height);
 
@@ -117,13 +111,13 @@ GdkPixbuf *blur_background_ximage(XImage *image)
 	for (row = 0; row < s_height; row++)
 	{
 	    guchar *data = pixels + row * rowstride;
-	    MagickExportImagePixels(outWand, 0, row, s_width, 1, "RGBA", CharPixel, data);
+	    MagickExportImagePixels(inWand, 0, row, s_width, 1, "RGBA", CharPixel, data);
 	}
 
 	pitr = DestroyPixelIterator(pitr);
 	inWand = DestroyMagickWand(inWand);
-	outWand = DestroyMagickWand(outWand);
-
+	pwand = DestroyPixelWand(pwand);
+	
 	MagickWandTerminus();
 
 	return bg_target_pix;
@@ -246,6 +240,7 @@ GdkPixbuf *shadow_icon(GdkPixbuf *src_pix, const char *path)
 
     MagickWandGenesis();
 
+    // never unref src_pix
     // if path == NULL && src_pix != NULL == indicators
     if(path == NULL)
     {
@@ -283,9 +278,6 @@ GdkPixbuf *shadow_icon(GdkPixbuf *src_pix, const char *path)
 	MagickExportImagePixels(dest_wand, 0, row, width, 1, "RGBA", CharPixel, data);
     }
 
-    if (src_pix)
-	g_object_unref(G_OBJECT(src_pix));
-    
     if (shadow)
     	shadow = DestroyMagickWand(shadow);
 

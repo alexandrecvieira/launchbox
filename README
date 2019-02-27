@@ -1,9 +1,10 @@
 ### Launchbox - Application Launcher for Openbox
-### Launchbox mostra uma janela em tela cheia listando todos os programas instalados, e possui um campo de busca
 
-Launchbox é idealizado para permitir a busca rápida e execução dos programas instalados, o aspecto visual e funcionamento são baseados no conceito do [Slingscold do Ubuntu](https://sourceforge.net/projects/slingscold/).
+Launchbox é idealizado para permitir a busca rápida e execução dos programas instalados no ambiente Openbox.
 
-O código foi adaptado do plugin LaunchApps para LXPanel para ser usado como uma aplicação comum
+O aspecto visual e funcionamento são baseados no conceito do [Slingscold do Ubuntu](https://sourceforge.net/projects/slingscold/).
+
+O código foi adaptado do plugin LaunchApps para LXPanel para ser usado como uma aplicação comum através de um atalho configurado pelo usuário como, por exemplo: **Super + w**
 
 A linguagem é C.
 
@@ -12,7 +13,7 @@ A linguagem é C.
 
 ##### Dependências:
 	Para Ubuntu e Debian:
-	sudo apt install libglib2.0-dev libgtk2.0-dev libmagickwand-dev
+	sudo apt install libglib2.0-dev libgtk2.0-dev libmagickwand-dev libX11-dev 
 	
 ##### Para instalar pelo source:
 	git clone https://github.com/alexandrecvieira/launchbox.git
@@ -22,4 +23,24 @@ A linguagem é C.
 	make
 	sudo make install
 
+##### Screenshot
+
+<img src="http://alexandrecvieira.droppages.com/images/launchbox.png" width="600">
+
+**Teclas de atalho:**
+
+* Esc &rArr; Fecha
+
+* Enter &rArr; Executa a busca
+
+* &uarr; &rArr; Avança uma página
+
+* &darr; &rArr; Retrocede uma página
+
+* Roda do mouse &rArr; Para frente: avança uma página, para trás: retrocede uma página
+
+**Features**
+* Recent Applications
+* Entry Completion
+* Compatibility with most used screen resolutions(1024x768 | 1280x800 | 1280x1024 | 1366x768 | 1440x900 | 1600x900 | 1680x1050 | 1920x1080)
 

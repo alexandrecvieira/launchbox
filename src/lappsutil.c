@@ -99,7 +99,7 @@ GdkPixbuf *blur_background_ximage(XImage *image)
             (void) PixelSyncIterator(pitr);
 	}
 
-	MagickBlurImage(inWand, 0, 15);
+	MagickBlurImage(inWand, 0, 5);
 
 	// MagickSetImageOpacity(inWand, 0.5);
 

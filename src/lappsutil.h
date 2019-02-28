@@ -51,7 +51,8 @@ void set_icons_fonts_sizes();
 gboolean blur_background(const char *image_path, const char *bg_image_path);
 GdkPixbuf *blur_background_ximage(XImage *image);
 GdkPixbuf *create_app_name(const char *app_name, double font_size);
-GdkPixbuf *shadow_icon(GdkPixbuf *src_pix, const char *path);
+gboolean shadow_icon(const char *path);
+GdkPixbuf *shadow_indicator(GdkPixbuf *src_pix);
 int app_name_comparator(GAppInfo *item1, GAppInfo *item2);
 Pixmap get_root_pixmap(Display* display, Window *root);
 

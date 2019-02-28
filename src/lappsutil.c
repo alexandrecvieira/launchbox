@@ -48,8 +48,7 @@ gboolean blur_background(const char *image_path, const char *bg_image_path)
 
     MagickWriteImage(inWand, bg_image_path);
 
-    if (inWand)
-	inWand = DestroyMagickWand(inWand);
+    inWand = DestroyMagickWand(inWand);
  
     MagickWandTerminus();
 
@@ -139,13 +138,17 @@ GdkPixbuf *create_app_name(const char *app_name, double font_size)
     char **app_name_splited = g_strsplit(app_name, " ", -1);
     char **ptr = NULL;
     int i = 1;
+    int lines = 1;
     for (ptr = app_name_splited; *ptr; ptr++)
     {
 	if (i == 1)
 	    target_name = g_strconcat(*ptr, " ", NULL);
-	if (i > 1 && (i % 2) == 0)
+	if (i > 1 && (i % 2) == 0) // i == 2 or i == 4 or ...
+	{
 	    target_name = g_strconcat(target_name, *ptr, "\n ", NULL);
-	if (i > 1 && (i % 2) > 0)
+	    lines++;
+	}
+	if (i > 1 && (i % 2) > 0) // i == 3 or i == 5 or ...
 	    target_name = g_strconcat(target_name, *ptr, " ", NULL);
 	i++;
     }
@@ -165,8 +168,16 @@ GdkPixbuf *create_app_name(const char *app_name, double font_size)
     PixelSetColor(p_wand, "white");
     DrawSetFillColor(d_wand, p_wand);
     DrawSetFont(d_wand, "Sans Serif");
-    DrawSetFontSize(d_wand, font_size);
 
+    if(lines > 3)
+    {
+	DrawSetFontSize(d_wand, font_size - 1);
+    }
+    else
+    {
+	DrawSetFontSize(d_wand, font_size);
+    }
+    
     // Turn antialias on - not sure this makes a difference
     DrawSetTextAntialias(d_wand, MagickTrue);
 
@@ -213,21 +224,62 @@ GdkPixbuf *create_app_name(const char *app_name, double font_size)
     }
 
     /* Clean up */
-    if (magick_wand)
-	magick_wand = DestroyMagickWand(magick_wand);
-    if (c_wand)
-	c_wand = DestroyMagickWand(c_wand);
-    if (d_wand)
-	d_wand = DestroyDrawingWand(d_wand);
-    if (p_wand)
-	p_wand = DestroyPixelWand(p_wand);
+    magick_wand = DestroyMagickWand(magick_wand);
+    c_wand = DestroyMagickWand(c_wand);
+    d_wand = DestroyDrawingWand(d_wand);
+    p_wand = DestroyPixelWand(p_wand);
 
     MagickWandTerminus();
 
     return bg_target_pix;
 }
 
-GdkPixbuf *shadow_icon(GdkPixbuf *src_pix, const char *path)
+gboolean shadow_icon(const char *path)
+{
+    MagickWand *src_wand = NULL;
+    MagickWand *dst_wand = NULL;
+    PixelWand *shadow_color = NULL;
+    MagickBooleanType status;
+  
+    MagickWandGenesis();
+
+    src_wand = NewMagickWand();
+    status = MagickReadImage(src_wand, path);
+
+    if (status == MagickFalse)
+    {
+	src_wand = DestroyMagickWand(src_wand);
+	MagickWandTerminus();
+	return FALSE;
+    }
+
+    shadow_color = NewPixelWand();
+   
+    dst_wand = CloneMagickWand(src_wand);
+
+    PixelSetColor(shadow_color, "black");
+    MagickSetImageBackgroundColor(dst_wand, shadow_color);
+
+    // MagickBooleanType MagickShadowImage(MagickWand *wand,
+    // const double alpha, const double sigma,const ssize_t x,const ssize_t y)
+    MagickShadowImage(dst_wand, 100, 2, 0, 0);
+
+    MagickCompositeImage(dst_wand, src_wand, OverCompositeOp, 2, 2);
+
+    MagickAdaptiveResizeImage(dst_wand, icon_size, icon_size);
+
+    MagickWriteImage(dst_wand, path);
+
+    src_wand = DestroyMagickWand(src_wand);
+    dst_wand = DestroyMagickWand(dst_wand);
+    shadow_color = DestroyPixelWand(shadow_color);
+
+    MagickWandTerminus();
+
+    return TRUE;
+}
+
+GdkPixbuf *shadow_indicator(GdkPixbuf *src_pix)
 {
     GdkPixbuf *bg_target_pix = NULL;
     size_t width, height;
@@ -240,18 +292,7 @@ GdkPixbuf *shadow_icon(GdkPixbuf *src_pix, const char *path)
 
     MagickWandGenesis();
 
-    // never unref src_pix
-    // if path == NULL && src_pix != NULL == indicators
-    if(path == NULL)
-    {
-	gdk_pixbuf_save_to_buffer(src_pix, &buffer, &buffer_size, "png", NULL);
-    }
-    else
-    {
-	// if path != NULL && src_pix == NULL == lapps_application_icon
-	GdkPixbuf *this_src_pix = gdk_pixbuf_new_from_file(path, NULL);
-	gdk_pixbuf_save_to_buffer(this_src_pix, &buffer, &buffer_size, "png", NULL);
-    }
+    gdk_pixbuf_save_to_buffer(src_pix, &buffer, &buffer_size, "png", NULL);
         
     src_wand = NewMagickWand();
     MagickBooleanType read = MagickReadImageBlob(src_wand, buffer, buffer_size);
@@ -278,17 +319,10 @@ GdkPixbuf *shadow_icon(GdkPixbuf *src_pix, const char *path)
 	MagickExportImagePixels(dest_wand, 0, row, width, 1, "RGBA", CharPixel, data);
     }
 
-    if (shadow)
-    	shadow = DestroyMagickWand(shadow);
-
-    if (src_wand)
-    	src_wand = DestroyMagickWand(src_wand);
-
-    if (dest_wand)
-    	dest_wand = DestroyMagickWand(dest_wand);
-
-    if (shadow_color)
-    	shadow_color = DestroyPixelWand(shadow_color);
+    shadow = DestroyMagickWand(shadow);
+    src_wand = DestroyMagickWand(src_wand);
+    dest_wand = DestroyMagickWand(dest_wand);
+    shadow_color = DestroyPixelWand(shadow_color);
 
     MagickWandTerminus();
 

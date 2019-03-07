@@ -23,6 +23,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdlib.h>
+#include <stdint.h>
 #include <math.h>
 #include <string.h>
 #include <fcntl.h>
@@ -30,6 +32,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <pwd.h>
+#include <time.h> 
 
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
@@ -52,14 +55,16 @@ extern int indicator_font_size, indicator_width, indicator_height;
 extern int s_height, s_width, grid[2], main_vbox_border_width;
 extern double screen_size_relation;
 extern char *recent_label_font_size;
+extern cairo_surface_t* surface;
 
 void set_icons_fonts_sizes();
 gboolean blur_background(const char *image_path, const char *bg_image_path);
-GdkPixbuf *blur_background_ximage(XImage *image);
+GdkPixbuf *ximage_to_pixbuf(XImage *image);
 GdkPixbuf *create_app_name(const char *app_name, double font_size);
 gboolean shadow_icon(const char *path);
 GdkPixbuf *shadow_indicator(GdkPixbuf *src_pix);
 int app_name_comparator(GAppInfo *item1, GAppInfo *item2);
 Pixmap get_root_pixmap(Display* display, Window *root);
+gboolean on_draw_event(GtkWidget *widget, cairo_t *cr, gpointer user_data);
 
 #endif /* LAPPSUTIL_H */

@@ -859,27 +859,41 @@ static void lapps_create_main_window()
     gtk_widget_show(main_window);
 
     // window background
-    GtkWidget *layout = gtk_layout_new(NULL, NULL);
-    gtk_layout_set_size(GTK_LAYOUT(layout), s_width, s_height);
-    gtk_container_add(GTK_CONTAINER(main_window), layout);
-    gtk_widget_show(layout);
+    GtkWidget *layout = NULL;
     GtkWidget *bg_image = NULL;
+    cairo_t *cr;
     if(bg_pixbuf == NULL)
     {
-	bg_image = gtk_image_new_from_file(bg_image_path);
+	layout = gtk_layout_new(NULL, NULL);
+	gtk_layout_set_size(GTK_LAYOUT(layout), s_width, s_height);
+	gtk_container_add(GTK_CONTAINER(main_window), layout);
+	gtk_widget_show(layout);
+    	bg_image = gtk_image_new_from_file(bg_image_path);
+	gtk_layout_put(GTK_LAYOUT(layout), bg_image, 0, 0);
+	gtk_widget_show(bg_image);
     }
-    else {
-	bg_image = gtk_image_new_from_pixbuf(bg_pixbuf);
+    else
+    {
+	surface = cairo_image_surface_create (CAIRO_FORMAT_RGB24, s_width , s_height);
+	cr = cairo_create (surface);
+	gdk_cairo_set_source_pixbuf (cr, bg_pixbuf, 0, 0);
+	cairo_paint (cr);
 	g_object_unref(bg_pixbuf);
+	g_signal_connect(G_OBJECT(main_window), "expose-event", G_CALLBACK(on_draw_event), NULL); 
     }
-    gtk_layout_put(GTK_LAYOUT(layout), bg_image, 0, 0);
-    gtk_widget_show(bg_image);
 
     // main vbox for applications
     GtkWidget *main_vbox = gtk_vbox_new(FALSE, 0);
     gtk_widget_set_size_request(main_vbox, s_width, s_height);
     gtk_container_set_border_width(GTK_CONTAINER(main_vbox), main_vbox_border_width);
-    gtk_container_add(GTK_CONTAINER(layout), main_vbox);
+    if(bg_pixbuf == NULL)
+    {
+	gtk_container_add(GTK_CONTAINER(layout), main_vbox);
+    }
+    else
+    {
+	gtk_container_add(GTK_CONTAINER(main_window), main_vbox);
+    }
     gtk_widget_show(main_vbox);
 
     // search entry
@@ -1052,6 +1066,10 @@ int main(int argc, char *argv[]) {
     Pixmap bg_pixmap;
     XImage *image;
 
+    /* debug time
+    clock_t t;
+    t = clock(); */
+        
     myfd = open(LOCKFILE, O_CREAT|O_EXCL);
     if ( myfd < 0 )
     {
@@ -1097,7 +1115,7 @@ int main(int argc, char *argv[]) {
 	root = RootWindow(display, DefaultScreen(display));
 	bg_pixmap = get_root_pixmap(display, &root);
 	image = XGetImage(display, bg_pixmap, 0, 0, s_width, s_height, ~0, ZPixmap);
-	bg_pixbuf = blur_background_ximage(image);
+	bg_pixbuf = ximage_to_pixbuf(image);
 	XDestroyImage(image);
     }
             
@@ -1108,6 +1126,11 @@ int main(int argc, char *argv[]) {
         
     gtk_main();
 
+    /* debug time
+    t = clock() - t; 
+    double time_taken = ((double)t)/CLOCKS_PER_SEC; // in seconds 
+    printf("launchbox took %f seconds to execute \n", time_taken); */
+        
     unlink(LOCKFILE);
 
     close(myfd);

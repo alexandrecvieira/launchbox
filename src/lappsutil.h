@@ -25,12 +25,18 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 
 #include <gdk/gdk.h>
+#include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <gio/gio.h>
 #include <glib.h>

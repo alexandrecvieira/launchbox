@@ -20,14 +20,6 @@
 
 #include "lappsutil.h"
 
-#include <fcntl.h>
-#include <signal.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <pwd.h>
-
-#include <gdk/gdkkeysyms.h>
-
 #define LAPPSICON "system-run"
 #define LAPPSNAME "Launchbox"
 #define BG "bglaunchapps.jpg"
@@ -1059,7 +1051,7 @@ int main(int argc, char *argv[]) {
     Window  root;
     Pixmap bg_pixmap;
     XImage *image;
-     
+
     myfd = open(LOCKFILE, O_CREAT|O_EXCL);
     if ( myfd < 0 )
     {

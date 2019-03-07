@@ -39,8 +39,35 @@ A linguagem é C.
 
 * Roda do mouse &rArr; Para frente: avança uma página, para trás: retrocede uma página
 
-**Features**
+### Launchbox 2.0.0(Unreleased)
+**New Features**
 * Recent Applications
 * Entry Completion
 * Compatibility with most used screen resolutions(1024x768 | 1280x800 | 1280x1024 | 1366x768 | 1440x900 | 1600x900 | 1680x1050 | 1920x1080)
 
+## CHANGELOG
+### [Unreleased]
+#### Added
+- Recent Applications
+- Entry Completion
+- Compatibility with most used screen resolutions(1024x768 | 1280x800 | 1280x1024 | 1366x768 | 1440x900 | 1600x900 | 1680x1050 | 1920x1080)
+
+#### Fixed
+- Memory consumption
+
+### [1.0.2] - 2018-01-27
+Funcional apenas na resolução de tela 1920x1080(ISSUE #2)
+#### Fixed
+- Alterado ícone para "system-run"
+
+#### Added
+- Tip "LaunchApps"
+
+### [1.0.1] - 2017-11-16
+Funcional apenas na resolução de tela 1920x1080(ISSUE #2)
+#### Fixed
+- Dynamic calculation of pages
+
+### [1.0.0] - 2017-11-14
+Funcional apenas na resolução de tela 1920x1080(ISSUE #2)
+- Release 1.0.0

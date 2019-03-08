@@ -1,4 +1,8 @@
 
+2019-03-08  Alexandre C Vieira <acamargo.vieira@gmail.com>
+
+	* background mais opaco para melhorar visualização
+
 2019-03-07  Alexandre C Vieira <acamargo.vieira@gmail.com>
 
 	* melhorada performance com Cairo para fazer o blur do background
@@ -44,7 +48,7 @@
 2019-02-15  Alexandre C Vieira <acamargo.vieira@gmail.com>
 
 	* Lendo os paths dos icones
-	* Start rename project to launchbox...
+	* Start...
 
 2018-03-19  acamargovieira <acamargo.vieira@gmail.com>
 

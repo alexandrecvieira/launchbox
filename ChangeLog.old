@@ -1,4 +1,8 @@
 
+2019-03-07  Alexandre C Vieira <acamargo.vieira@gmail.com>
+
+	* melhorada performance com Cairo para fazer o blur do background
+
 2019-03-06  Alexandre C Vieira <acamargo.vieira@gmail.com>
 
 	* reorganização dos includes

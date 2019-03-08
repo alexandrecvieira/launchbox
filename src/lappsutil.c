@@ -547,8 +547,10 @@ gboolean on_draw_event(GtkWidget *widget, cairo_t *cr,
     
     cairo_set_source_surface( cr, surface, 0, 0 );
     cairo_paint(cr);
-
-    // cairo_surface_destroy (surface);
+    cairo_set_source_rgba (cr, 0, 0, 0, 0.9);
+    cairo_fill (cr);
+    cairo_paint_with_alpha(cr, 0.2);
+    
     cairo_destroy( cr );
 
     expose_count++;

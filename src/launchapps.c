@@ -1066,10 +1066,16 @@ int main(int argc, char *argv[]) {
     Pixmap bg_pixmap;
     XImage *image;
 
-    /* debug time
+    /* debug time */
     clock_t t;
-    t = clock(); */
-        
+    if(argc > 1)
+    {
+	if(strcmp(argv[1], "debug-time") == 0)
+	{
+	    t = clock();
+	}
+    }
+    	        
     myfd = open(LOCKFILE, O_CREAT|O_EXCL);
     if ( myfd < 0 )
     {
@@ -1083,7 +1089,7 @@ int main(int argc, char *argv[]) {
     act.sa_flags = 0;
     sigaction(SIGINT, &act, NULL);
 
-    gtk_init(&argc, &argv);
+    gtk_init(0, NULL);
 
     const char *homedir;
     if ((homedir = getenv("HOME")) == NULL) {
@@ -1126,11 +1132,17 @@ int main(int argc, char *argv[]) {
         
     gtk_main();
 
-    /* debug time
-    t = clock() - t; 
-    double time_taken = ((double)t)/CLOCKS_PER_SEC; // in seconds 
-    printf("launchbox took %f seconds to execute \n", time_taken); */
-        
+    /* debug time */
+    if(argc > 1)
+    {
+	if(strcmp(argv[1], "debug-time") == 0)
+	{
+	    t = clock() - t; 
+	    double time_taken = ((double)t)/CLOCKS_PER_SEC; // in seconds 
+	    printf("\n\nlaunchbox took %f seconds to execute\n\n", time_taken);
+	}
+    }
+            
     unlink(LOCKFILE);
 
     close(myfd);

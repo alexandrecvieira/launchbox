@@ -1141,6 +1141,10 @@ int main(int argc, char *argv[]) {
 	    double time_taken = ((double)t)/CLOCKS_PER_SEC; // in seconds 
 	    printf("\n\nlaunchbox took %f seconds to execute\n\n", time_taken);
 	}
+	else
+	{
+	    printf("\n\nusage: launchbox debug-time\n\n", time_taken);
+	}
     }
             
     unlink(LOCKFILE);

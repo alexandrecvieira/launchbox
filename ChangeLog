@@ -1,6 +1,11 @@
 
+2019-03-11  Alexandre C Vieira <acamargo.vieira@gmail.com>
+
+	* launchapps.c (main): command line help
+
 2019-03-08  Alexandre C Vieira <acamargo.vieira@gmail.com>
 
+	* debug time command line arg
 	* background mais opaco para melhorar visualização
 
 2019-03-07  Alexandre C Vieira <acamargo.vieira@gmail.com>

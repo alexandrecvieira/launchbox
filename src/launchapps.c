@@ -1143,7 +1143,7 @@ int main(int argc, char *argv[]) {
 	}
 	else
 	{
-	    printf("\n\nusage: launchbox debug-time\n\n", time_taken);
+	    printf("\n\nusage: launchbox debug-time\n\n");
 	}
     }
             

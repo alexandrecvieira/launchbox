@@ -1,4 +1,8 @@
 
+2019-04-16  Alexandre C Vieira <acamargo.vieira@gmail.com>
+
+	* Error and Fix ( pre-install & make )(ISSUE #1)
+
 2019-03-11  Alexandre C Vieira <acamargo.vieira@gmail.com>
 
 	* launchapps.c (main): fix command line help error

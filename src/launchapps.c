@@ -1076,7 +1076,7 @@ int main(int argc, char *argv[]) {
 	}
     }
     	        
-    myfd = open(LOCKFILE, O_CREAT|O_EXCL);
+    myfd = open(LOCKFILE, O_CREAT|O_EXCL, 0600);
     if ( myfd < 0 )
     {
 	openlog("Launchbox", LOG_PID | LOG_CONS, LOG_USER);

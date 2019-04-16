@@ -13,7 +13,7 @@ A linguagem é C.
 
 ##### Dependências:
 	Para Ubuntu e Debian:
-	sudo apt install libglib2.0-dev libgtk2.0-dev libmagickwand-dev libX11-dev 
+	sudo apt install libglib2.0-dev libgtk2.0-dev libmagickwand-dev libx11-dev 
 	
 ##### Para instalar pelo source:
 	git clone https://github.com/alexandrecvieira/launchbox.git

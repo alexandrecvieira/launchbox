@@ -25,7 +25,7 @@ A linguagem é C.
 
 ##### Screenshot
 
-<img src="http://alexandrecvieira.droppages.com/images/launchbox.png" width="600">
+<img src="http://alexandrecvieira.droppages.com/images/launchbox/launchbox.png" width="600">
 
 **Teclas de atalho:**
 
@@ -38,6 +38,16 @@ A linguagem é C.
 * &darr; &rArr; Retrocede uma página
 
 * Roda do mouse &rArr; Para frente: avança uma página, para trás: retrocede uma página
+
+**Cliques**
+
+* Clique sobre o ícone do programa &rArr; Executa o programa e fecha a janela do LaunchApps
+
+* ![indicators](http://alexandrecvieira.droppages.com/images/launchbox/launchapps-page-indicator.png) &rArr; Avança ou retrocede uma página
+
+* ![lupa](http://alexandrecvieira.droppages.com/images/launchbox/launchapps-search.png) &rArr; Executa a busca
+
+* ![clear](http://alexandrecvieira.droppages.com/images/launchbox/launchapps-clear-search.png) &rArr; limpa o campo de busca e volta para o ínicio
 
 ### Launchbox 2.0.0(Unreleased)
 **New Features**
